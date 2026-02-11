@@ -1,4 +1,5 @@
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, HttpUrl, EmailStr, ConfigDict
+from datetime import datetime
 
 # define request body schema
 class CourseCreate(BaseModel):
@@ -8,11 +9,19 @@ class CourseCreate(BaseModel):
     website: HttpUrl
 
 class CourseResponse(CourseCreate):
+    # return the data as a dictionary, define how the response is going to be returned
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
 
-    # define how the response is going to be returned
-    #orm_mode = True: return the data as a dictionary
-    class Config:
-        orm_mode = True
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
 
+class UserResponse(BaseModel):
+     # return the data as a dictionary, define how the response is going to be returned
+    model_config = ConfigDict(from_attributes=True)
 
+    id: int
+    email: EmailStr
+    created_at:datetime
