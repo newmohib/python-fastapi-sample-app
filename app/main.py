@@ -67,16 +67,45 @@ async def create_course(course: Course):
     return {"data:": new_course}
 
 
+
+@app.post("/create_course")
+async def create_course(course: Course, db: Session = Depends(get_db)):
+    new_course= models.Course(
+        name= course.name,
+        instructor= course.instructor,
+        duration= course.duration,
+        website= str(course.website)
+    )
+
+    db.add(new_course)
+    db.commit()
+    db.refresh(new_course)
+    return {"data": new_course}
+
+
 @app.get("/course-list")
 def get_courses():
     cursor.execute("SELECT * FROM course")
     data = cursor.fetchall()
     return {"data":data}
 
+
+@app.get("/courses")
+def get_courses(db: Session = Depends(get_db)):
+    data = db.query(models.Course).all()
+    return {"data":data}
+
 @app.get("/course/{id}")
 def get_courses(id: int):
     cursor.execute(""" SELECT * FROM course WHERE id = %s """, (id,))
     data = cursor.fetchone()
+    if not data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"Course not found with id: {id}")
+    return {"data":data}
+
+@app.get("/course-by-id/{id}")
+def get_courses(id: int, db: Session = Depends(get_db)):
+    data = db.query(models.Course).filter(models.Course.id == id).first()
     if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"Course not found with id: {id}")
     return {"data":data}
@@ -92,7 +121,24 @@ def delete_courses(id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"Course not found with id: {id}")
     return Response(status_code=status.HTTP_404_NOT_FOUND)
 
+# @app.delete("/delete_course/{id}", status_code=status.HTTP_204_NO_CONTENT)
+# def delete_courses(id: int, db: Session = Depends(get_db)):
+#     course = db.query(models.Course).filter(models.Course.id == id)
+#     if not course.first():
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"Course not found with id: {id}")
+#     course.delete(synchronize_session=False)
+#     db.commit()
+#     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
+@app.delete("/delete_course/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_courses(id: int, db: Session = Depends(get_db)):
+    course_query = db.query(models.Course).filter(models.Course.id == id)
+    course = course_query.first()
+    if not course:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"Course not found with id: {id}")
+    course_query.delete(synchronize_session=False)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @app.put("/course/{id}")
 async def update_course(id: int, course: Course):
@@ -111,6 +157,34 @@ async def update_course(id: int, course: Course):
     if not updated_course:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"Course not found with id: {id}")
     return {"data:": updated_course}
+
+@app.put("/update_course/{id}")
+def update_course(id: int, course: Course, db: Session = Depends(get_db)):
+    data = db.query(models.Course).filter(models.Course.id == id)
+    if not data.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"Course not found with id: {id}")
+    data.update({
+        "name": course.name,
+        "instructor": course.instructor,
+        "duration": course.duration,
+        "website": str(course.website)
+    })
+    db.commit()
+    return {"data": data.first()}
+
+# @app.put("/update_course/{id}")
+# def update_course(id: int, course: Course, db: Session = Depends(get_db)):
+#     course_query = db.query(models.Course).filter(models.Course.id == id)
+#     data = course_query.first()
+#     if not data:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail= f"Course not found with id: {id}")
+    
+#     update_data = course.model_dump()
+#     update_data["website"] = str(update_data["website"])
+#     course_query.update(update_data, synchronize_session=False)
+#     db.commit()
+#     db.refresh(course)
+#     return {"data": course}
 
 
 @app.get("/sqlalchemy")
