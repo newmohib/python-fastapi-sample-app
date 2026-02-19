@@ -14,6 +14,7 @@ class CourseResponse(CourseCreate):
     model_config = ConfigDict(from_attributes=True)
     
     id: int
+    creator_id: int
 
 class UserCreate(BaseModel):
     email: EmailStr

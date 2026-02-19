@@ -19,3 +19,24 @@
 - pip install sqlalchemy // ORM
 - 
 
+
+
+### Step 1: repo clone করুন
+git clone your_repo_url
+cd your_project
+
+### Step 2: virtual environment তৈরি করুন
+python3 -m venv venv
+source venv/bin/activate   # Linux / Debian
+
+### Step 3: সব dependency install করুন
+pip install -r requirements.txt
+
+## 🎯 Pro Tip (Cleaner requirements file)
+
+অনেক সময় pip freeze unnecessary packages include করে।
+Better approach:
+এটা project scan করে শুধু used packages add করবে।
+
+pip install pipreqs
+pipreqs . --force
