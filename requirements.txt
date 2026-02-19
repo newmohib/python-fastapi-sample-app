@@ -1,6 +1,11 @@
-fastapi==0.129.0
-pwdlib==0.3.0
-pydantic==2.12.5
-pydantic_settings==2.13.1
-PyJWT==2.11.0
+
+fastapi[standard]==0.129.0
 SQLAlchemy==2.0.46
+psycopg[binary]
+
+pydantic==2.12.5
+pydantic-settings==2.13.1
+
+PyJWT==2.11.0
+pwdlib[argon2]==0.3.0
+python-dotenv
